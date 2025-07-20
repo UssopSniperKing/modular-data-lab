@@ -267,7 +267,7 @@ The framework uses a simple file-based structure. You can customize:
 pwd
 
 # Recreate project structure if needed
-uv run setup.py
+uv run setup
 ```
 
 **Import errors in modules:**

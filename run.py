@@ -8,11 +8,11 @@ def show_help() -> None:
     help_text = """
 📋 Available Commands:
 
-  python run.py list                    # List modules
-  python run.py add <module_name>       # Create a new module
-  python run.py run <module_name>       # Run a module
-  python run.py remove <module_name>    # Remove a module
-  python run.py help                    # Show this help
+  uv lab list                    # List modules
+  uv lab add <module_name>       # Create a new module
+  uv lab run <module_name>       # Run a module
+  uv lab remove <module_name>    # Remove a module
+  uv lab help                    # Show this help
 
 📁 Structure created for each module:
   modules/module_name/run.py           # Entry point
