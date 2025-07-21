@@ -28,8 +28,11 @@ A Python framework for organizing and managing data analysis projects in a modul
    
    # Or fork it first, then clone your fork
    
-   # Install dependencies (virtual environment is automatically created)
-   uv sync
+   # Create virtual environment is automatically
+   uv venv
+
+   # Install in dev mode
+   uv pip install -e .
    
    # Set up project structure
    uv run setup
