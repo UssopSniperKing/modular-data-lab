@@ -94,7 +94,7 @@ def list_modules() -> None:
     
     if not modules:
         print("📋 No module found")
-        print("💡 Use 'python run.py add <module_name>'")
+        print("💡 Use 'uv run lab add <module_name>'")
         return
     
     def format_size(size_bytes:int) -> str:
@@ -158,7 +158,7 @@ def run_module(module_name: str) -> None:
 
         # Execute the module's run function
         if hasattr(module, 'run'):
-            result = module.run()
+            module.run()
             print(f"✅ Module '{module_name}' finished")
             return True
         else:

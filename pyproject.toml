@@ -8,7 +8,10 @@ readme = "README.md"
 authors = [{name = "UssopSniperKing"}]
 license = "MIT"
 license-files = ["LICEN[CS]E.*"]
-dependencies = []
+dependencies = [
+    "matplotlib>=3.10.3",
+    "pandas>=2.3.1",
+]
 
 [project.urls]
 Documentation = "https://github.com/ussopsniperking/modular-data-lab/README.md"

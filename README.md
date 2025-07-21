@@ -166,7 +166,6 @@ def load_data():
 ```python
 """Analyze data for sales_analysis"""
 
-import pandas as pd
 import matplotlib.pyplot as plt
 
 def analyze(data):
@@ -188,34 +187,17 @@ def analyze(data):
     print(f"📈 Average Order Value: ${avg_order_value:.2f}")
     
     # Create visualization
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 10))
-    
-    # Revenue by category (pie chart)
-    ax1.pie(category_revenue.values, labels=category_revenue.index, autopct='%1.1f%%')
-    ax1.set_title('Revenue Distribution by Category')
-    
-    # Monthly revenue (bar chart)
-    monthly_revenue.plot(kind='bar', ax=ax2, color='steelblue')
-    ax2.set_title('Monthly Revenue')
-    ax2.set_ylabel('Revenue ($)')
-    ax2.tick_params(axis='x', rotation=45)
+    plt.figure()
     
     # Revenue by region
     region_revenue = data.groupby('region')['revenue'].sum()
-    region_revenue.plot(kind='bar', ax=ax3, color='lightcoral')
-    ax3.set_title('Revenue by Region')
-    ax3.set_ylabel('Revenue ($)')
-    ax3.tick_params(axis='x', rotation=0)
-    
-    # Top products
-    top_products.plot(kind='barh', ax=ax4, color='gold')
-    ax4.set_title('Top 5 Products by Revenue')
-    ax4.set_xlabel('Revenue ($)')
+    region_revenue.plot(kind='bar', color='lightcoral')
+    plt.title('Revenue by Region')
+    plt.ylabel('Revenue ($)')
+    plt.tick_params(axis='x', rotation=0)
     
     plt.tight_layout()
     plt.show()
-    
-    print("\n✅ Analysis completed with visualizations!")
 ```
 
 **5. Run the complete analysis:**
@@ -235,7 +217,6 @@ uv run lab run sales_analysis
 📦 Total Quantity: 27
 📈 Average Order Value: $497.20
 
-✅ Analysis completed with visualizations!
 === Finished ===
 ✅ Module 'sales_analysis' finished
 ```
@@ -293,7 +274,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 ## 📄 License
 
-This project is open source. Feel free to modify and distribute according to your needs.
+This project is open source (MIT License). Feel free to modify and distribute according to your needs.
 
 ---
 

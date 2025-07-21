@@ -1,5 +1,4 @@
 import sys
-from pathlib import Path
 from utils import create_module, list_modules, run_module, remove_module
 
 def show_help() -> None:
