@@ -1,6 +1,7 @@
 from pathlib import Path
 import shutil
 import importlib.util
+import traceback
 
 def create_module(module_name: str) -> None:
     """Create a new module with its structure
@@ -42,7 +43,7 @@ if __name__ == "__main__":
 
     # load_data.py file
     load_data_content = f'''"""Load data for {module_name}"""
-    from pathlib import Path
+from pathlib import Path
 
 def load_data() -> None:
     """Load module data"""
@@ -122,7 +123,7 @@ def list_modules() -> None:
         
         if data_path.exists():
             # Get all files in the data directory
-            data_files = [f for f in data_path.glob("*") if f.is_file()]
+            data_files = [f for f in data_path.rglob("*") if f.is_file()]
             
             if data_files:
                 # Compute total size of data files
@@ -166,7 +167,8 @@ def run_module(module_name: str) -> None:
             return False
             
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"❌ Une erreur est survenue : {e}")
+        traceback.print_exc()
         return False
 
 
