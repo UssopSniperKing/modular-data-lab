@@ -12,3 +12,8 @@ wheels/
 # Data and module folders
 data/
 modules/
+
+# Test and coverage reports
+.coverage
+htmlcov/
+.pytest_cache/
