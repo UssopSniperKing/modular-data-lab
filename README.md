@@ -1,284 +1,258 @@
-# Modular Data Lab (README TO BE UPDATED!)
+# Modular Data Lab (MDL)
 
-A Python framework for organizing and managing data analysis projects in a modular structure. Each module contains its own data loading, analysis functions, and dedicated data directory.
+A Python framework for organizing data analysis projects in modular, reusable components. Each module contains its own data loading, analysis functions, and dedicated data directory, making it easy to manage multiple analysis workflows in a single project.
 
-## 🚀 Quick Start
+## ✨ What does it do?
 
-### Prerequisites
+**Modular Data Lab** helps you:
+- **Organize** your data analysis projects into clean, modular components
+- **Standardize** your workflow with consistent data loading and analysis patterns  
+- **Manage** datasets in dedicated directories per module
+- **Reuse** analysis code across different projects
+- **Backup** and share specific modules or entire projects
 
-- Python 3.12+
-- [uv](https://github.com/astral-sh/uv) package manager
+### Project Structure
 
-### Installation
+After initialization, your project will look like:
 
-1. **Install uv** (if not already installed):
-   ```bash
-   # On macOS and Linux
-   curl -LsSf https://astral.sh/uv/install.sh | sh
-   
-   # On Windows (PowerShell)
-   powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-   ```
-
-2. **Clone the project from GitHub**:
-   ```bash
-   # Clone the repository
-   git clone https://github.com/ussopsniperking/modular-data-lab.git
-   cd modular-data-lab
-   
-   # Or fork it first, then clone your fork
-   
-   # Create virtual environment is automatically
-   uv venv
-
-   # Install in dev mode
-   uv pip install -e .
-   
-   # Set up project structure
-   uv run setup
-   ```
-
-### First Run
-
-After initialization, you should see:
 ```
-🚀 Project Initialization
-Created Folder: modules/
-Created Folder: data/
-✅ Base Structure Created!
-💡 Use 'uv run lab add <module_name>' to add a module
+your-project/
+├── modules/           # Analysis modules
+│   └── module_name/
+│       ├── run.py     # Entry point
+│       ├── load_data.py
+│       └── analyze.py
+└── data/              # Data storage
+    └── module_name/
+        └── *.csv      # Your datasets
 ```
 
-## 📋 Usage
+Each module follows a simple, consistent structure that makes it easy to understand and maintain your analysis workflows.
 
-### Basic Commands
+## 🚀 Installation
 
-All commands use `uv run` with the script directly:
+### Option 1: With uv (Recommended)
+
+[uv](https://github.com/astral-sh/uv) is a fast Python package manager that handles virtual environments automatically.
 
 ```bash
-# Show help
-uv run lab help
-# or
-uv run help
+# Install uv if you don't have it
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Install MDL from GitHub (latest release)
+uv add git+https://github.com/ussopsniperking/modular-data-lab.git@v0.1.0
+
+# OR install from the last commit on the master branch
+# uv add git+https://github.com/ussopsniperking/modular-data-lab.git
+
+# Initialize your project
+uv run lab setup
+```
+
+### Option 2: With standard Python
+
+```bash
+# Create and activate virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install MDL from GitHub
+pip install git+https://github.com/ussopsniperking/modular-data-lab.git
+
+# Initialize your project
+python -m modular_data_lab.run setup
+```
+
+## 📋 Commands
+
+```bash
+# Initialize project structure
+uv run lab setup
 
 # Create a new analysis module
-uv run lab add my_analysis
+uv run lab add <module_name>
 
-# List all available modules
+# List all modules
 uv run lab list
 
 # Run a specific module
-uv run lab run my_analysis
+uv run lab run <module_name>
 
-# Remove a module (with confirmation)
-uv run lab remove my_analysis
+# Remove a module
+uv run lab remove <module_name>
+
+# Backup modules
+uv run lab backup <target_directory>                    # Backup all modules
+uv run lab backup <module_name> <target_directory>      # Backup specific module
+
+# Show help
+uv run lab help
 ```
 
-### 📦 Adding Dependencies
+**Without uv:** Replace `uv run lab` with `python -m modular_data_lab.run` in all commands.
 
-Use uv to add Python packages:
+## 📖 Quick Example
 
+Let's create a simple sales analysis module:
+
+### 1. Setup and create module
 ```bash
-# Add data science packages
-uv add pandas numpy matplotlib seaborn scikit-learn
-
-# Add specific versions
-uv add "pandas>=2.0.0"
-
-# Sync all dependencies (after cloning)
-uv sync
-```
-
-### 🏗️ Project Structure
-
-```
-modular-data-lab/
-├── README.md              # This file
-├── pyproject.toml         # uv project configuration
-├── setup.py               # Project initialization
-├── run.py                 # Main CLI interface
-├── utils.py               # Utility functions
-├── modules/               # Analysis modules
-│   └── module_name/
-│       ├── run.py         # Module entry point
-│       ├── load_data.py   # Data loading logic
-│       ├── analyze.py     # Analysis functions
-|       └── # any python files
-└── data/                  # Data storage
-    └── module_name/       # Module-specific data (which can contain subfolders)
-        └── *.csv          # Your data files (.csv for example)
-```
-
-## 🚀 Example
-
-### Complete Example: Sales Analysis
-
-Let's walk through a complete example analyzing sales data:
-
-**1. Create the module:**
-```bash
+uv run lab setup
 uv run lab add sales_analysis
 ```
 
-**2. Create sample data file `data/sales_analysis/sales.csv`:**
+### 2. Add sample data
+Create `data/sales_analysis/sales.csv`:
 ```csv
-date,product,category,revenue,quantity,region
-2024-01-15,Laptop,Electronics,1200,2,North
-2024-01-16,Coffee Maker,Appliances,89,1,South
-2024-01-17,Smartphone,Electronics,799,3,East
-2024-01-18,Desk Chair,Furniture,299,1,West
-2024-01-19,Tablet,Electronics,499,2,North
-2024-01-20,Microwave,Appliances,159,1,South
-2024-01-21,Monitor,Electronics,349,2,East
-2024-01-22,Sofa,Furniture,899,1,West
-2024-01-23,Headphones,Electronics,199,4,North
-2024-01-24,Blender,Appliances,79,2,South
-2024-02-01,Laptop,Electronics,1200,1,East
-2024-02-02,Coffee Maker,Appliances,89,3,West
-2024-02-03,Smartphone,Electronics,799,2,North
-2024-02-04,Desk Chair,Furniture,299,2,South
-2024-02-05,Gaming Console,Electronics,499,1,East
+date,product,revenue,region
+2024-01-15,Laptop,1200,North
+2024-01-16,Phone,800,South
+2024-01-17,Tablet,500,East
+2024-01-18,Monitor,300,West
 ```
 
-**3. Implement data loading (`modules/sales_analysis/load_data.py`):**
+### 3. Implement data loading
+Edit `modules/sales_analysis/load_data.py`:
 ```python
-"""Load data for sales_analysis"""
-
 import pandas as pd
 from pathlib import Path
 
 def load_data():
-    """Load module data"""
-    
+    """Load sales data"""
     data_dir = Path(__file__).parent.parent.parent / "data" / "sales_analysis"
     
-    # Load CSV file
+    # Load CSV
     sales_data = pd.read_csv(data_dir / "sales.csv")
-    
-    # Convert date column
     sales_data['date'] = pd.to_datetime(sales_data['date'])
-    sales_data['month'] = sales_data['date'].dt.strftime('%Y-%m')
     
     print(f"✅ Loaded {len(sales_data)} sales records")
-    print(f"📅 Date range: {sales_data['date'].min()} to {sales_data['date'].max()}")
-    
     return sales_data
 ```
 
-**4. Implement analysis (`modules/sales_analysis/analyze.py`):**
+### 4. Implement analysis
+Edit `modules/sales_analysis/analyze.py`:
 ```python
-"""Analyze data for sales_analysis"""
-
-import matplotlib.pyplot as plt
-
 def analyze(data):
-    """Perform data analysis"""
-    
+    """Analyze sales data"""
     if data is None or data.empty:
         print("❌ No data to analyze")
-        return None
+        return
     
-    print("\n📊 Sales Analysis Results:")
-    
-    # Basic statistics
-    total_revenue = data['revenue'].sum()
-    total_quantity = data['quantity'].sum()
-    avg_order_value = data['revenue'].mean()
-    
-    print(f"💰 Total Revenue: ${total_revenue:,.2f}")
-    print(f"📦 Total Quantity: {total_quantity}")
-    print(f"📈 Average Order Value: ${avg_order_value:.2f}")
-    
-    # Create visualization
-    plt.figure()
+    print("\n📊 Sales Analysis:")
+    print(f"💰 Total Revenue: ${data['revenue'].sum():,.2f}")
+    print(f"📈 Average Sale: ${data['revenue'].mean():.2f}")
     
     # Revenue by region
+    print("\n🌍 Revenue by Region:")
     region_revenue = data.groupby('region')['revenue'].sum()
-    region_revenue.plot(kind='bar', color='lightcoral')
-    plt.title('Revenue by Region')
-    plt.ylabel('Revenue ($)')
-    plt.tick_params(axis='x', rotation=0)
-    
-    plt.tight_layout()
-    plt.show()
+    for region, revenue in region_revenue.items():
+        print(f"   {region}: ${revenue:,.2f}")
 ```
 
-**5. Run the complete analysis:**
+### 5. Run the analysis
 ```bash
 uv run lab run sales_analysis
 ```
 
-**Expected output:**
+**Output:**
 ```
 ▶️  Running: sales_analysis
 === Module sales_analysis ===
-✅ Loaded 15 sales records
-📅 Date range: 2024-01-15 00:00:00 to 2024-02-05 00:00:00
+✅ Loaded 4 sales records
 
-📊 Sales Analysis Results:
-💰 Total Revenue: $7,458.00
-📦 Total Quantity: 27
-📈 Average Order Value: $497.20
+📊 Sales Analysis:
+💰 Total Revenue: $2,800.00
+📈 Average Sale: $700.00
 
+🌍 Revenue by Region:
+   East: $500.00
+   North: $1,200.00
+   South: $800.00
+   West: $300.00
 === Finished ===
 ✅ Module 'sales_analysis' finished
 ```
 
-This example demonstrates the complete workflow from data creation to analysis with meaningful insights and visualizations.
 
-## 🔧 Configuration
 
-The framework uses a simple file-based structure. You can customize:
+## 🔧 Adding Dependencies
 
-1. **Module Templates**: Edit the content templates in `utils.py` `create_module()` function
-2. **Project Structure**: Modify `setup.py` to create additional directories
-3. **CLI Commands**: Extend `run.py` with additional commands
-4. **Commands Aliases**: Create aliases by modifying the `pyproject.toml` file
-
-## 💡 Tips
-
-- **Data Organization**: Keep related datasets in the same module's data directory
-- **Code Reusability**: Create utility functions in separate files within each module
-- **Version Control**: Add `data/` to `.gitignore` if your datasets are large (this is done by default)
-- **Virtual Environment**: uv automatically manages your virtual environment via `pyproject.toml`
-- **Dependencies**: Dependencies are managed in `pyproject.toml` and installed with `uv sync`
-
-## 🐛 Troubleshooting
-
-**Module not found errors:**
+### With uv:
 ```bash
-# Ensure you're in the project directory
-pwd
-
-# Recreate project structure if needed
-uv run setup
+uv add pandas matplotlib seaborn scikit-learn
 ```
 
-**Import errors in modules:**
+### With pip:
 ```bash
-# Check if dependencies are installed
-uv list
-
-# Add missing packages
-uv add package_name
-
-# Sync dependencies if pyproject.toml was updated
-uv sync
+pip install pandas matplotlib seaborn scikit-learn
 ```
 
-**Permission errors:**
-```bash
-# Ensure uv is properly installed and in PATH
-uv --version
+## 💾 Backup Features
 
-# Reinstall uv if needed
-curl -LsSf https://astral.sh/uv/install.sh | sh
+The framework includes built-in backup functionality with optional flags:
+
+```bash
+# Backup all modules to a directory
+uv run lab backup /path/to/backup/
+
+# Backup specific module
+uv run lab backup sales_analysis /path/to/backup/
+
+# Backup only data files (using --data or -d flag)
+uv run lab backup --data /path/to/backup/
+uv run lab backup -d /path/to/backup/
+
+# Backup only code files (using --code or -c flag)
+uv run lab backup --code /path/to/backup/
+uv run lab backup -c /path/to/backup/
+```
+
+**Backup flags:**
+- `--data` or `-d`: Backup only data directories
+- `--code` or `-c`: Backup only code directories  
+- No flag: Backup everything (default)
+
+Backups are created as timestamped ZIP files with compression.
+
+## 💡 Best Practices
+
+- **Keep modules focused**: One analysis goal per module
+- **Use descriptive names**: `customer_segmentation` vs `analysis1`
+- **Document your data**: Add comments about data sources and formats
+- **Reuse code**: Create utility functions in separate files within modules
+
+## 🔧 Advanced Usage
+
+### Custom Module Structure
+You can add additional Python files to any module:
+```
+modules/advanced_analysis/
+├── run.py
+├── load_data.py
+├── analyze.py
+├── utils.py          # Custom utilities
+└── visualizations.py # Custom plots
+```
+
+### Data Organization
+Organize complex datasets in subdirectories:
+```
+data/market_research/
+├── raw/
+│   ├── survey_2024.csv
+│   └── demographics.csv
+├── processed/
+│   └── cleaned_data.csv
+└── external/
+    └── market_data.json
 ```
 
 ## 📄 License
 
-This project is open source (MIT License). Feel free to modify and distribute according to your needs.
+MIT License - Feel free to use, modify, and distribute.# Modular Data Lab
 
 ---
 
 **Happy analyzing! 📊✨**
+
+*Need help? Check the command reference with `uv run lab help` or create an issue on GitHub.*
