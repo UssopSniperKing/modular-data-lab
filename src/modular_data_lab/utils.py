@@ -2,75 +2,50 @@ from pathlib import Path
 import shutil
 import importlib.util
 import traceback
+from modular_data_lab.templates import get_templates
+
+def get_project_root() -> Path | None:
+    """Get the root directory of the project
+    Returns:
+        Path | None: The root directory path or None if not found
+    """
+
+    current_path = Path.cwd()
+
+    # Check if the current directory is the root
+    if (current_path / "modules").exists() and (current_path / "data").exists():
+        return current_path
+    
+    # Traverse up the directory tree to find the root
+    for parent in current_path.parents:
+        if (parent / "modules").exists() and (parent / "data").exists():
+            return parent
+    return None
+
 
 def create_module(module_name: str) -> None:
     """Create a new module with its structure
     Args:
         module_name (str): Name of the module to create
     """
+    project_root = get_project_root()
+    if project_root is None:
+        print("❌ Project root not found. You're not in a modular data lab project.")
+        print("💡 Run 'lab-setup' to initialize the project structure")
+        return
 
-    module_dir = Path(f"modules/{module_name}")
-    data_dir = Path(f"data/{module_name}")
+
+    module_dir = project_root / f"modules/{module_name}"
+    data_dir = project_root / f"data/{module_name}"
 
     module_dir.mkdir(parents=True, exist_ok=True)
     data_dir.mkdir(parents=True, exist_ok=True)
     
-    # run.py file
-    run_content = f'''"""Module {module_name}"""
+    # Get templates
+    files = get_templates()
+    files = {filename: content.format(module_name=module_name) for filename, content in files.items()}
 
-from pathlib import Path
-import sys
-
-# Import other module functions
-sys.path.append(str(Path(__file__).parent))
-from load_data import load_data
-from analyze import analyze
-
-def run() -> None:
-    """Main execution function"""
-
-    print(f"=== Module {module_name} ===")
-    
-    data = load_data()
-    results = analyze(data)
-    
-    print(f"=== Finished ===")
-
-
-if __name__ == "__main__":
-    run()
-'''
-
-    # load_data.py file
-    load_data_content = f'''"""Load data for {module_name}"""
-from pathlib import Path
-
-def load_data() -> None:
-    """Load module data"""
-
-    data_dir = Path(__file__).parent.parent.parent / "data" / "{module_name}"
-
-    # TODO: Implement loading
-    pass
-'''
-    
-    # analyze.py file
-    analyze_content = f'''"""Analyze data for {module_name}"""
-
-def analyze(data) -> None:
-    """Perform data analysis"""
-
-    # TODO: Implement analysis
-    pass
-'''
-
-    # Writing files
-    files = {
-        "run.py": run_content,
-        "load_data.py": load_data_content,
-        "analyze.py": analyze_content
-    }
-    
+    # Write files
     for filename, content in files.items():
         with open(module_dir / filename, "w") as f:
             f.write(content)
@@ -84,10 +59,17 @@ def analyze(data) -> None:
 def list_modules() -> None:
     """List all available modules"""
 
-    modules_dir = Path("modules")
-    
+    project_root = get_project_root()
+    if project_root is None:
+        print("❌ Project root not found. You're not in a modular data lab project.")
+        print("💡 Run 'lab-setup' to initialize the project structure")
+        return
+
+    modules_dir = project_root / "modules"
+
     if not modules_dir.exists():
-        print("❌ Modules directory does not exist. Run 'python setup.py'")
+        print("❌ Modules directory does not exist")
+        print("💡 Run 'lab-setup' to initialize the project structure")
         return
     
     # Get all directories in the modules directory
@@ -95,7 +77,7 @@ def list_modules() -> None:
     
     if not modules:
         print("📋 No module found")
-        print("💡 Use 'uv run lab add <module_name>'")
+        print("💡 Use 'lab add <module_name>'")
         return
     
     def format_size(size_bytes:int) -> str:
@@ -142,9 +124,14 @@ def run_module(module_name: str) -> None:
     Args:
         module_name (str): Name of the module to run
     """
+    project_root = get_project_root()
+    if project_root is None:
+        print("❌ Project root not found. You're not in a modular data lab project.")
+        print("💡 Run 'lab-setup' to initialize the project structure")
+        return
 
-    module_path = Path(f"modules/{module_name}/run.py")
-    
+    module_path = project_root / f"modules/{module_name}/run.py"
+
     if not module_path.exists():
         print(f"❌ Module '{module_name}' not found")
         return False
@@ -167,7 +154,7 @@ def run_module(module_name: str) -> None:
             return False
             
     except Exception as e:
-        print(f"❌ Une erreur est survenue : {e}")
+        print(f"❌ An error occurred: {e}")
         traceback.print_exc()
         return False
 
@@ -177,10 +164,14 @@ def remove_module(module_name: str) -> None:
     Args:
         module_name (str): Name of the module to remove
     """
+    project_root = get_project_root()
+    if project_root is None:
+        print("❌ Project root not found. You're not in a modular data lab project.")
+        return
 
-    module_dir = Path(f"modules/{module_name}")
-    data_dir = Path(f"data/{module_name}")
-    
+    module_dir = project_root / f"modules/{module_name}"
+    data_dir = project_root / f"data/{module_name}"
+
     if not module_dir.exists():
         print(f"❌ Module '{module_name}' not found")
         return

@@ -1,4 +1,4 @@
-# Modular Data Lab
+# Modular Data Lab (README TO BE UPDATED!)
 
 A Python framework for organizing and managing data analysis projects in a modular structure. Each module contains its own data loading, analysis functions, and dedicated data directory.
 

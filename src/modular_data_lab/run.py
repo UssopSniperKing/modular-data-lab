@@ -1,17 +1,18 @@
 import sys
-from utils import create_module, list_modules, run_module, remove_module
+from modular_data_lab.utils import create_module, list_modules, run_module, remove_module
 
 def show_help() -> None:
     """Show help information"""
 
     help_text = """
 📋 Available Commands:
-
-  uv lab list                    # List modules
-  uv lab add <module_name>       # Create a new module
-  uv lab run <module_name>       # Run a module
-  uv lab remove <module_name>    # Remove a module
-  uv lab help                    # Show this help
+  
+  lab-setup                   # Initialize the project structure
+  lab list                    # List modules
+  lab add <module_name>       # Create a new module
+  lab run <module_name>       # Run a module
+  lab remove <module_name>    # Remove a module
+  lab help                    # Show this help
 
 📁 Structure created for each module:
   modules/module_name/run.py           # Entry point
