@@ -61,7 +61,7 @@ class TestBackupModules:
         captured = capsys.readouterr()
         assert "✅ Backup completed:" in captured.out
         assert "📁 Modules: 2/2" in captured.out
-        assert "📦 second_module: 1 files" in captured.out
+        assert "📦 second_module: 2 files" in captured.out
         assert "📦 test_module: 5 files" in captured.out
     
     def test_backup_data_only(self, mock_cwd, backup_target, capsys):

@@ -61,17 +61,17 @@ def main() -> None:
     # Remove flags from argv for cleaner parsing
     clean_argv = [arg for arg in sys.argv if arg not in ["-d", "--data", "-c", "--code"]]
     
-    if command == "add" and len(sys.argv) == 3:
-        create_module(sys.argv[2])
+    if command == "add" and len(clean_argv) == 3:  # Changed from sys.argv to clean_argv
+        create_module(clean_argv[2])
     elif command == "list":
         list_modules()
-    elif command == "run" and len(sys.argv) == 3:
-        run_module(sys.argv[2])
-    elif command == "remove" and len(sys.argv) == 3:
-        remove_module(sys.argv[2])
-    elif command == "backup" and len(sys.argv) == 4:
+    elif command == "run" and len(clean_argv) == 3:  # Changed from sys.argv to clean_argv
+        run_module(clean_argv[2])
+    elif command == "remove" and len(clean_argv) == 3:  # Changed from sys.argv to clean_argv
+        remove_module(clean_argv[2])
+    elif command == "backup" and len(clean_argv) == 4:  # 4 args: ['lab', 'backup', 'module', 'dir']
         backup_modules(clean_argv[3], clean_argv[2], data_only, code_only)
-    elif command == "backup" and len(clean_argv) == 3:
+    elif command == "backup" and len(clean_argv) == 3:  # 3 args: ['lab', 'backup', 'dir']
         backup_modules(clean_argv[2], None, data_only, code_only)
     elif command == "setup":
         setup()

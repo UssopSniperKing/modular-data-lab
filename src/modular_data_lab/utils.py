@@ -5,6 +5,7 @@ import traceback
 from modular_data_lab.templates import get_templates
 from zipfile import ZipFile
 from datetime import datetime
+import time
 
 def get_project_root() -> Path | None:
     """Get the root directory of the project
@@ -15,7 +16,7 @@ def get_project_root() -> Path | None:
     current_path = Path.cwd()
 
     # Check if the current directory is the root
-    if (current_path / "modules").exists() and (current_path / "data").exists():
+    if (current_path / "modules").exists() or (current_path / "data").exists():
         return current_path
     
     # Traverse up the directory tree to find the root
@@ -253,7 +254,8 @@ def backup_single_module(project_root: Path, module_name: str, target_dir: Path,
     elif code_only:
         suffix = "_code"
     
-    zip_filename = f"{module_name}_backup{suffix}_{timestamp}.zip"
+    base_name = f"{module_name}_backup{suffix}"
+    zip_filename = generate_unique_filename(base_name, target_dir)
     zip_path = target_dir / zip_filename
     
     module_dir = project_root / "modules" / module_name
@@ -400,3 +402,29 @@ def format_size(size_bytes: int) -> str:
         i += 1
     
     return f"{size_bytes:.1f} {size_names[i]}"
+
+
+def generate_unique_filename(base_name: str, target_dir: Path, extension: str = ".zip") -> str:
+    """Generate a unique filename with timestamp and counter if needed
+    Args:
+        base_name (str): Base name for the file
+        target_dir (Path): Directory where the file will be saved
+        extension (str): File extension (default: .zip)
+    Returns:
+        str: Unique filename
+    """
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"{base_name}_{timestamp}{extension}"
+    
+    # If file exists, add microseconds and counter
+    counter = 0
+    while (target_dir / filename).exists():
+        microseconds = datetime.now().strftime("%f")[:3]  # 3 digits of microseconds
+        filename = f"{base_name}_{timestamp}_{microseconds}_{counter:02d}{extension}"
+        counter += 1
+        if counter > 99:  # Safety limit
+            time.sleep(0.001)  # Wait a millisecond
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            counter = 0
+    
+    return filename

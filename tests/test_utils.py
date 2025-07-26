@@ -48,7 +48,7 @@ class TestCreateModule:
         # Vérifier le contenu des fichiers
         run_content = (module_dir / "run.py").read_text()
         assert "new_module" in run_content
-        assert "def run():" in run_content
+        assert "def run() -> None:" in run_content
         
         # Vérifier la sortie
         captured = capsys.readouterr()
