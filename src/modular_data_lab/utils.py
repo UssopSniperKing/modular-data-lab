@@ -3,6 +3,8 @@ import shutil
 import importlib.util
 import traceback
 from modular_data_lab.templates import get_templates
+from zipfile import ZipFile
+from datetime import datetime
 
 def get_project_root() -> Path | None:
     """Get the root directory of the project
@@ -31,7 +33,7 @@ def create_module(module_name: str) -> None:
     project_root = get_project_root()
     if project_root is None:
         print("❌ Project root not found. You're not in a modular data lab project.")
-        print("💡 Run 'lab-setup' to initialize the project structure")
+        print("💡 Run 'lab setup' to initialize the project structure")
         return
 
 
@@ -62,14 +64,14 @@ def list_modules() -> None:
     project_root = get_project_root()
     if project_root is None:
         print("❌ Project root not found. You're not in a modular data lab project.")
-        print("💡 Run 'lab-setup' to initialize the project structure")
+        print("💡 Run 'lab setup' to initialize the project structure")
         return
 
     modules_dir = project_root / "modules"
 
     if not modules_dir.exists():
         print("❌ Modules directory does not exist")
-        print("💡 Run 'lab-setup' to initialize the project structure")
+        print("💡 Run 'lab setup' to initialize the project structure")
         return
     
     # Get all directories in the modules directory
@@ -79,26 +81,7 @@ def list_modules() -> None:
         print("📋 No module found")
         print("💡 Use 'lab add <module_name>'")
         return
-    
-    def format_size(size_bytes:int) -> str:
-        """Format size in bytes to a human-readable string
-        Args:
-            size_bytes (int): Size in bytes
-        Returns:
-            str: Formatted size string
-        """
 
-        if size_bytes == 0:
-            return "0 B"
-        
-        size_names = ["B", "KB", "MB", "GB", "TB"]
-        i = 0
-        while size_bytes >= 1024 and i < len(size_names) - 1:
-            size_bytes /= 1024.0
-            i += 1
-        
-        return f"{size_bytes:.1f} {size_names[i]}"
-    
     print(f"📋 Available Modules ({len(modules)}):")
     for module in sorted(modules):
         data_path = Path(f"data/{module}")
@@ -127,7 +110,7 @@ def run_module(module_name: str) -> None:
     project_root = get_project_root()
     if project_root is None:
         print("❌ Project root not found. You're not in a modular data lab project.")
-        print("💡 Run 'lab-setup' to initialize the project structure")
+        print("💡 Run 'lab setup' to initialize the project structure")
         return
 
     module_path = project_root / f"modules/{module_name}/run.py"
@@ -190,3 +173,230 @@ def remove_module(module_name: str) -> None:
     if data_dir.exists():
         shutil.rmtree(data_dir)
         print(f"✅ Folder data/{module_name}/ removed")
+
+
+def backup_modules(target_dir: str, module_name: str = None, data_only: bool = False, code_only: bool = False) -> None:
+    """Backup modules to a zip file
+    Args:
+        target_dir (str): Target directory for the backup
+        module_name (str, optional): Specific module to backup, None for all
+        data_only (bool): Backup only data directories
+        code_only (bool): Backup only code directories
+    """
+    
+    # Validation du projet
+    project_root = get_project_root()
+    if project_root is None:
+        print("❌ Project root not found. You're not in a modular data lab project.")
+        return
+    
+    # Validation du répertoire cible
+    target_dir = Path(target_dir)
+    if not target_dir.exists():
+        print(f"❌ Target directory '{target_dir}' does not exist")
+        return
+    
+    if not target_dir.is_dir():
+        print(f"❌ '{target_dir}' is not a directory")
+        return
+    
+    # Validation des flags
+    if data_only and code_only:
+        print("❌ Cannot use both --data and --code flags together")
+        return
+    
+    # Déterminer les modules à sauvegarder
+    modules_dir = project_root / "modules"
+    if not modules_dir.exists():
+        print("❌ No modules directory found")
+        return
+    
+    if module_name:
+        # Module spécifique
+        if not (modules_dir / module_name).exists():
+            print(f"❌ Module '{module_name}' not found")
+            return
+        modules = [module_name]
+    else:
+        # Tous les modules
+        modules = [d.name for d in modules_dir.iterdir() if d.is_dir()]
+        if not modules:
+            print("❌ No modules found to backup")
+            return
+    
+    # Créer le nom du fichier zip avec timestamp
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    if module_name:
+        # Backup d'un module spécifique
+        backup_single_module(project_root, module_name, target_dir, timestamp, data_only, code_only)
+    else:
+        # Backup de tous les modules dans un seul zip
+        backup_all_modules(project_root, modules, target_dir, timestamp, data_only, code_only)
+
+
+def backup_single_module(project_root: Path, module_name: str, target_dir: Path, timestamp: str, data_only: bool, code_only: bool) -> None:
+    """Backup a single module
+    Args:
+        project_root (Path): Root directory of the project
+        module_name (str): Name of the module to backup
+        target_dir (Path): Target directory for the backup
+        timestamp (str): Timestamp for the backup file
+        data_only (bool): Backup only data directories
+        code_only (bool): Backup only code directories
+    """
+    
+    # Déterminer le suffixe selon les options
+    suffix = ""
+    if data_only:
+        suffix = "_data"
+    elif code_only:
+        suffix = "_code"
+    
+    zip_filename = f"{module_name}_backup{suffix}_{timestamp}.zip"
+    zip_path = target_dir / zip_filename
+    
+    module_dir = project_root / "modules" / module_name
+    data_dir = project_root / "data" / module_name
+    
+    # Vérifier qu'au moins un des dossiers existe
+    if not module_dir.exists() and not data_dir.exists():
+        print(f"❌ Neither code nor data found for module '{module_name}'")
+        return
+    
+    files_added = 0
+    total_size = 0
+    
+    try:
+        with ZipFile(zip_path, 'w') as zipf:
+            
+            # Backup du code
+            if not data_only and module_dir.exists():
+                for file_path in module_dir.rglob("*"):
+                    if file_path.is_file():
+                        arc_name = f"modules/{module_name}/{file_path.relative_to(module_dir)}"
+                        zipf.write(file_path, arc_name)
+                        files_added += 1
+                        total_size += file_path.stat().st_size
+            
+            # Backup des données
+            if not code_only and data_dir.exists():
+                for file_path in data_dir.rglob("*"):
+                    if file_path.is_file():
+                        arc_name = f"data/{module_name}/{file_path.relative_to(data_dir)}"
+                        zipf.write(file_path, arc_name)
+                        files_added += 1
+                        total_size += file_path.stat().st_size
+        
+        if files_added == 0:
+            print(f"⚠️  No files found to backup for module '{module_name}'")
+            zip_path.unlink()  # Supprimer le zip vide
+            return
+        
+        # Afficher le résultat
+        zip_size = zip_path.stat().st_size
+        print(f"✅ Module '{module_name}' backed up:")
+        print(f"   📁 Files: {files_added}")
+        print(f"   📊 Original size: {format_size(total_size)}")
+        print(f"   🗜️  Compressed size: {format_size(zip_size)}")
+        print(f"   📄 Saved as: {zip_filename}")
+        
+    except Exception as e:
+        print(f"❌ Error creating backup for '{module_name}': {e}")
+        if zip_path.exists():
+            zip_path.unlink()
+
+
+def backup_all_modules(project_root: Path, modules: list, target_dir: Path, timestamp: str, data_only: bool, code_only: bool) -> None:
+    """Backup all modules in a single zip file
+    Args:
+        project_root (Path): Root directory of the project
+        modules (list): List of module names to backup
+        target_dir (Path): Target directory for the backup
+        timestamp (str): Timestamp for the backup file
+        data_only (bool): Backup only data directories
+        code_only (bool): Backup only code directories"""
+    
+    # Déterminer le suffixe selon les options
+    suffix = ""
+    if data_only:
+        suffix = "_data"
+    elif code_only:
+        suffix = "_code"
+    
+    zip_filename = f"all_modules_backup{suffix}_{timestamp}.zip"
+    zip_path = target_dir / zip_filename
+    
+    files_added = 0
+    total_size = 0
+    modules_processed = 0
+    
+    try:
+        with ZipFile(zip_path, 'w') as zipf:
+            
+            for module_name in modules:
+                module_dir = project_root / "modules" / module_name
+                data_dir = project_root / "data" / module_name
+                module_files = 0
+                
+                # Backup du code
+                if not data_only and module_dir.exists():
+                    for file_path in module_dir.rglob("*"):
+                        if file_path.is_file():
+                            arc_name = f"modules/{module_name}/{file_path.relative_to(module_dir)}"
+                            zipf.write(file_path, arc_name)
+                            files_added += 1
+                            module_files += 1
+                            total_size += file_path.stat().st_size
+                
+                # Backup des données
+                if not code_only and data_dir.exists():
+                    for file_path in data_dir.rglob("*"):
+                        if file_path.is_file():
+                            arc_name = f"data/{module_name}/{file_path.relative_to(data_dir)}"
+                            zipf.write(file_path, arc_name)
+                            files_added += 1
+                            module_files += 1
+                            total_size += file_path.stat().st_size
+                
+                if module_files > 0:
+                    modules_processed += 1
+                    print(f"   📦 {module_name}: {module_files} files")
+        
+        if files_added == 0:
+            print("⚠️  No files found to backup")
+            zip_path.unlink()  # Supprimer le zip vide
+            return
+        
+        # Afficher le résultat
+        zip_size = zip_path.stat().st_size
+        print("✅ Backup completed:")
+        print(f"   📁 Modules: {modules_processed}/{len(modules)}")
+        print(f"   📄 Total files: {files_added}")
+        print(f"   📊 Original size: {format_size(total_size)}")
+        print(f"   🗜️  Compressed size: {format_size(zip_size)}")
+        print(f"   💾 Saved as: {zip_filename}")
+        
+    except Exception as e:
+        print(f"❌ Error creating backup: {e}")
+        if zip_path.exists():
+            zip_path.unlink()
+
+
+def format_size(size_bytes: int) -> str:
+    """Format size in bytes to a human-readable string
+    Args:
+        size_bytes (int): Size in bytes
+    Returns:
+        str: Formatted size string
+    """
+    if size_bytes == 0:
+        return "0 B"
+    
+    size_names = ["B", "KB", "MB", "GB", "TB"]
+    i = 0
+    while size_bytes >= 1024 and i < len(size_names) - 1:
+        size_bytes /= 1024.0
+        i += 1
+    
+    return f"{size_bytes:.1f} {size_names[i]}"

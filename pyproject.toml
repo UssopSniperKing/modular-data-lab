@@ -23,4 +23,3 @@ packages = ["src/modular_data_lab"]
 
 [project.scripts]
 lab = "modular_data_lab.run:main"
-lab-setup = "modular_data_lab.setup:main"

@@ -1,5 +1,6 @@
 import sys
-from modular_data_lab.utils import create_module, list_modules, run_module, remove_module
+from pathlib import Path
+from modular_data_lab.utils import create_module, list_modules, run_module, remove_module, backup_modules
 
 def show_help() -> None:
     """Show help information"""
@@ -7,12 +8,18 @@ def show_help() -> None:
     help_text = """
 📋 Available Commands:
   
-  lab-setup                   # Initialize the project structure
-  lab list                    # List modules
-  lab add <module_name>       # Create a new module
-  lab run <module_name>       # Run a module
-  lab remove <module_name>    # Remove a module
-  lab help                    # Show this help
+  lab setup                           # Initialize the project structure
+  lab list                            # List modules
+  lab add <module_name>               # Create a new module
+  lab run <module_name>               # Run a module
+  lab remove <module_name>            # Remove a module
+  lab backup <module_name> <dir>      # Backup specific module
+  lab backup <dir>                    # Backup all modules
+  lab help                            # Show this help
+
+  🔧 Backup Options:
+  -d, --data    Backup only data directories
+  -c, --code    Backup only code directories
 
 📁 Structure created for each module:
   modules/module_name/run.py           # Entry point
@@ -23,6 +30,21 @@ def show_help() -> None:
     print(help_text)
 
 
+def setup() -> None:
+    """Initialize the project structure"""
+
+    print("🚀 Project Initialization")
+
+    directories = ["modules", "data"] # Base directories
+    
+    for directory in directories:
+        Path(directory).mkdir(exist_ok=True)
+        print(f"Created Folder: {directory}/")
+    
+    print("✅ Base Structure Created!")
+    print("💡 Use 'lab add <module_name>' to add a module")
+
+
 def main() -> None:
     """Main entry point for the script"""
 
@@ -31,6 +53,13 @@ def main() -> None:
         return
     
     command = sys.argv[1].lower()
+
+    # Parse flags
+    data_only = "-d" in sys.argv or "--data" in sys.argv
+    code_only = "-c" in sys.argv or "--code" in sys.argv
+    
+    # Remove flags from argv for cleaner parsing
+    clean_argv = [arg for arg in sys.argv if arg not in ["-d", "--data", "-c", "--code"]]
     
     if command == "add" and len(sys.argv) == 3:
         create_module(sys.argv[2])
@@ -40,6 +69,12 @@ def main() -> None:
         run_module(sys.argv[2])
     elif command == "remove" and len(sys.argv) == 3:
         remove_module(sys.argv[2])
+    elif command == "backup" and len(sys.argv) == 4:
+        backup_modules(clean_argv[3], clean_argv[2], data_only, code_only)
+    elif command == "backup" and len(clean_argv) == 3:
+        backup_modules(clean_argv[2], None, data_only, code_only)
+    elif command == "setup":
+        setup()
     elif command == "help":
         show_help()
     else:
